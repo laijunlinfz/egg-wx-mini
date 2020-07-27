@@ -1,6 +1,6 @@
 {
   "name": "egg-wx-mini",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "eggPlugin": {
     "name": "wxMini"
@@ -30,14 +30,12 @@
     "cov": "egg-bin cov",
     "lint": "eslint .",
     "ci": "egg-bin pkgfiles --check && npm run lint && npm run cov",
-    "pkgfiles": "egg-bin pkgfiles",
-    "autod": "autod"
+    "pkgfiles": "egg-bin pkgfiles"
   },
   "files": [
-    "app.js",
-    "agent.js",
+    "app",
     "config",
-    "app"
+    "app.js"
   ],
   "ci": {
     "version": "8, 10"
