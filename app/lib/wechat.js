@@ -10,6 +10,8 @@
  * }
  */
 
+const http = require("./http");
+
 let ACCESS_TOKEN_CATCH = {};
 
 const getCatchToken = (appid) => {
@@ -34,7 +36,7 @@ const getWechatAccessToken = async (config) => {
   if (catchToken) {
     return { code: 0, data: catchToken };
   }
-  const { ctx } = this;
+  // const { ctx } = this;
   if (!appid || !secret) {
     console.error("getWechatAccessToken: appid or secret is null");
     return "";
@@ -44,14 +46,14 @@ const getWechatAccessToken = async (config) => {
     appid +
     "&secret=" +
     secret;
-  const result = await ctx.curl(url);
-  let data = JSON.parse(result.data.toString());
+  // const result = await ctx.curl(url);
+  const result = await http({ url, method: "get" });
   // 返回示例
   // {
   //   "access_token": "12_fbGiPb3QuOW9M6n-Abg0ik4My2NocTJZZiAIAEUU",
   //   "expires_in": 7200
   // }
-  const { access_token = "", expires_in = 0 } = data;
+  const { access_token = "", expires_in = 0 } = result;
   if (access_token && expires_in) {
     setCatchToken(appid, access_token, expires_in);
     return access_token;
@@ -62,22 +64,24 @@ const getWechatAccessToken = async (config) => {
 
 // 生成页面的二维码
 const getWechatQRCode = async (config, sharePath) => {
-  const { ctx } = this;
   const tokenRes = await getWechatAccessToken(config);
-  if (tokenRes) {
+  if (!tokenRes) {
     console.error("getWechatQRCode: wechatAccessToken is null");
     return null;
   }
+  const url =
+    "https://api.weixin.qq.com/wxa/getwxacode?access_token=" + tokenRes;
+
   const options = {
+    url,
     method: "POST", // 必须指定 method
     contentType: "json", // 通过 contentType 告诉 HttpClient 以 JSON 格式发送
     data: { path: sharePath },
-    dataType: "Buffer", // 明确告诉 HttpClient 以 JSON 格式处理返回的响应 body
+    // dataType: "Buffer", // 明确告诉 HttpClient 以 JSON 格式处理返回的响应 body
+    responseType: "arraybuffer", // 明确告诉 HttpClient 以 JSON 格式处理返回的响应 body
   };
-  const url =
-    "https://api.weixin.qq.com/wxa/getwxacode?access_token=" + tokenRes;
-  const result = await ctx.curl(url, options);
-  const { data } = result;
+  // const result = await ctx.curl(url, options);
+  const result = await http(options);
   // if (data) {
   //     const fileName = ctx.utils.md5('miniprogram_qrcode_' + sharePath);
   //     // const qiniuUploadRes = await this.service.upload.qiniuUploadBuff(data, fileName);
@@ -90,12 +94,12 @@ const getWechatQRCode = async (config, sharePath) => {
   // } else {
   //     res = { code: 2, data: null };
   // }
-  return data;
+  return result;
 };
 
 /**获取微信openid */
 const getWchatOpenId = async (config, code) => {
-  const { ctx } = this;
+  // const { ctx } = this;
   const { appid = "", secret = "" } = config;
   let url =
     "https://api.weixin.qq.com/sns/jscode2session?appid=" +
@@ -105,17 +109,12 @@ const getWchatOpenId = async (config, code) => {
     "&js_code=" +
     code +
     "&grant_type=authorization_code";
-  let result = await ctx.curl(url);
-  let data = JSON.parse(result.data.toString());
-  if (!data || !data.openid) {
-    console.error("getWchatOpenId: openId is null 1");
+  let result = await http({ url, method: "get" });
+  if (!result || !result.openid) {
+    console.error("getWchatOpenId: openId is null ");
     return "";
   }
-  if (!data || !data.openid) {
-    console.error("getWchatOpenId: openId is null 2");
-    return "";
-  }
-  return data;
+  return result;
 };
 
 module.exports = {

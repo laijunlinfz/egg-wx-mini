@@ -1,10 +1,10 @@
 /* eslint-disable */
-'use strict';
+"use strict";
 
-const wxUtils = require('../lib/wechat');
+const utils = require("../lib/wechat");
 
-const wx = {
-    ...wxUtils
+const wxUtils = {
+  ...utils,
 };
 
-module.exports = { wx };
+module.exports = { wxUtils };
